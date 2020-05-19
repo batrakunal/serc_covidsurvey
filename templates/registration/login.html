@@ -1,0 +1,57 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-8 col-sm-7 col-md-6 col-lg-4">
+            <h1>Login</h1>
+            <form class="my-5" method="post">
+                {% csrf_token %}
+                <div class="input-group form-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    </div>
+                    {{ form.username }}
+                </div>
+                <div class="input-group form-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                    </div>
+                    {{ form.password }}
+                </div>
+                <button type="submit" class='btn btn-primary'>Login</button>
+            </form>
+{#            <p>Forget Password? <a href="/accounts/password_reset">Find here</a></p>#}
+            <p>Don't have account? <a href="/accounts/signup">Sign up here</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+
+<script>
+$(function () {
+    // add class
+    $( "input" ).addClass("form-control");
+    // add placeholder
+    $( "#id_username" ).attr("placeholder", "{{ form.username.label  }}");
+    $( "#id_password" ).attr("placeholder", "{{ form.password.label  }}");
+
+    // error info
+    {% if form.non_field_errors.as_text %}
+    const message = $('<div class="alert alert-danger alert-message" style="display: none;">');
+    const close = $('<button type="button" class="close" data-dismiss="alert">&times</button>');
+    message.append(close);
+    message.append("{{ form.non_field_errors.as_text }}");
+    message.appendTo($('body')).fadeIn(400).delay(3000).fadeOut(400);
+    {% endif %}
+});
+</script>
+
+{% endblock %}

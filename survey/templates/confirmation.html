@@ -1,0 +1,53 @@
+{% extends 'base_layout.html' %}
+{% load helper %}
+{% load static %}
+
+{% block title %}Confirmation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="confirmation-header my-5">
+        <h1>Thank you very much for taking the survey!</h1>
+    </div>
+
+                    <div class="resources">
+                        <div class="resource">
+                            <a href="{% url 'survey:output_pdf' %}" target="_blank">
+                                <button id="output-submission-in-pdf" type="button" class="px-3 py-2 px-sm-4 mb-2">
+                                    <i class="fas fa-file-download fa-lg mr-2"></i>
+                                    Download Your Submission.pdf
+                                </button>
+                            </a>
+                            <p>This will download all of the survey questions and your answers into a single file for
+                                future reference.</p>
+                        </div>
+                    </div>
+
+    {% for section, question_answer_dict in data.items %}
+        <h2>{{ section }}</h2>
+        {% for question, answer in question_answer_dict.items %}
+            <p>{{ question }}</p>
+            {% for ans in answer|split_answer %}
+                <p><mark>{{ ans|add_space_between_choice_answer }}</mark></p>
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+
+{#            {% if answer_resources_dict.answer == "Disagree" or answer_resources_dict.answer == "Strongly Disagree" %}#}
+{#                {% if answer_resources_dict.resources %}#}
+{#                    <p><div class="resources-container">#}
+{#                        <h5 class="resources-title">Useful Resouces:</h5>#}
+{#                        <ul>#}
+{#                        {% for resource in answer_resources_dict.resources %}#}
+{#                            <li class="resources-text">{{ resource }}</li>#}
+{#                        {% endfor %}#}
+{#                        </ul>#}
+{#                    </div>#}
+{#                    </p>#}
+{#                {% endif %}#}
+{#            {% endif %}#}
+
+
+</div>
+
+{% endblock %}

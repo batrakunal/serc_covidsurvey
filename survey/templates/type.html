@@ -1,0 +1,122 @@
+{% load helper %}
+
+{% if q.type == "choice" or q.type == "choice-text" %}
+    <div class="radio-group {{ q.type }} choice-vertical">
+        {% for choice in q.choice %}
+            <div>
+                {% if choice|is_text_choice %}
+                    {% if q.id in answers and answers|get_item:q.id|get_answer_choice == choice %}
+                        <input class="radio other-radio" type="radio" id="{{ q.id }}_{{ choice }}"
+                               name="{{ q.id }}" value="{{ answers|get_item:q.id }}" checked/>
+                        <label class="other-label" for="{{ q.id }}_{{ choice }}">{{ choice|remove_bracket }}</label>
+                        <input class="other-text" maxlength="140" placeholder="Please specify" type="text" data-choice="{{ choice }}" value="{{ answers|get_item:q.id|get_answer_content }}"/>
+                    {% else %}
+                        <input class="radio other-radio" type="radio" id="{{ q.id }}_{{ choice }}" name="{{ q.id }}" value="{{ choice }}"/>
+                        <label class="other-label" for="{{ q.id }}_{{ choice }}">{{ choice|remove_bracket }}</label>
+                        <input style="display: none;" maxlength="140" class="other-text" placeholder="Please specify" type="text" data-choice="{{ choice }}" />
+                    {% endif %}
+                {% else %}
+                    <input class="radio" type="radio" id="{{ q.id }}_{{ choice }}"
+                            name="{{ q.id }}" value="{{ choice }}"
+                   {% if q.id in answers and choice == answers|get_item:q.id %}
+                           checked
+                   {% endif %}
+                    />
+                    <label for="{{ q.id }}_{{ choice }}">{{ choice }}</label>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% elif q.type == "text"  %}
+    <textarea maxlength="3000" rows="5" cols="50" name="{{ q.id }}">{% if q.id in answers %}{{ answers|get_item:q.id }}{% endif %}</textarea>
+
+{% elif q.type == "choice-multi-text" %}
+    <div class="radio-group {{ q.type }} choice-vertical">
+        {% for choice in q.choice %}
+            <div>
+                {% if choice|is_text_choice %}
+                    {% if q.id in answers and answers|get_item:q.id|get_answer:choice %}
+                        <input class="radio other-radio" type="checkbox" id="{{ q.id }}_{{ choice }}"
+                               name="{{ q.id }}" value="{{ answers|get_item:q.id|get_answer:choice }}" checked/>
+                        <label class="other-label" for="{{ q.id }}_{{ choice }}">{{ choice|remove_bracket }}</label>
+                        <input class="other-text" maxlength="140" placeholder="Please specify" type="text" data-choice="{{ choice }}" value="{{ answers|get_item:q.id|get_answer:choice|get_answer_content }}"/>
+                    {% else %}
+                        <input class="radio other-radio" type="checkbox" id="{{ q.id }}_{{ choice }}" name="{{ q.id }}" value="{{ choice }}"/>
+                        <label class="other-label" for="{{ q.id }}_{{ choice }}">{{ choice|remove_bracket }}</label>
+                        <input style="display: none;" maxlength="140" class="other-text" placeholder="Please specify" type="text" data-choice="{{ choice }}" />
+                    {% endif %}
+                {% else %}
+                    <input class="radio" type="checkbox" id="{{ q.id }}_{{ choice }}"
+                            name="{{ q.id }}" value="{{ choice }}"
+                   {% if q.id in answers and answers|get_item:q.id|get_answer:choice%}
+                           checked
+                   {% endif %}
+                    />
+                    <label for="{{ q.id }}_{{ choice }}">{{ choice }}</label>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% elif q.type == "degree" %}
+    <div class="radio-group {{ q.type }} choice-vertical">
+        {% for choice in q.choice %}
+            <div>
+                <input class="radio" type="radio" id="{{ q.id }}_{{ choice }}"
+                        name="{{ q.id }}" value="{{ forloop.counter }}"
+               {% if q.id in answers and forloop.counter|slugify == answers|get_item:q.id %}
+                       checked
+               {% endif %}
+                />
+                <label for="{{ q.id }}_{{ choice }}">{{ choice }}</label>
+            </div>
+        {% endfor %}
+    </div>
+
+{% elif q.type == "matrix-text" or q.type == "matrix"%}
+    <div class="{{ q.type }}">
+        <table>
+        {% with degreeList=q.choice|get_matrix_degree %}
+            <thead>
+                <tr>
+                    <th></th>
+                    {% for degree in degreeList %}
+                    <th>{{degree}}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for choice in q.choice %}
+                {% with count=forloop.counter %}
+                    {% if count != 1 %}
+                        {% if choice|is_text_choice %}
+                            <td>{{ choice|remove_bracket }}</td>
+                            <td colspan="{{ degreeList|length }}">
+                                <textarea maxlength="1000" name="{{ q.id }}_{{ count }}" data-prefix="[{{ choice }}]">{% if q.id in answers and answers|get_item:q.id|match_matrix_text_answer_choice:choice %}{{ answers|get_item:q.id|match_matrix_text_answer_choice:choice|get_matrix_text_answer_content }}{% endif %}</textarea>
+                            </td>
+                        {% else %}
+                            <td>{{ choice }}</td>
+                            {% for degree in degreeList %}
+                                <td>
+                                    {% if q.id in answers and answers|get_item:q.id|match_matrix_radio_answer_choice:choice|match_matrix_radio_answer_degree:degree %}
+                                        <input class="matrix-radio" type="radio" id="{{ q.id }}_{{ choice }}_{{ forloop.counter }}"
+                                            name="{{ q.id }}_{{ count }}" value="[{{ choice }}]{{ degree }}" checked/>
+                                        <label for="{{ q.id }}_{{ choice }}_{{ forloop.counter }}">&#10003;</label>
+                                    {% else %}
+                                        <input class="matrix-radio" type="radio" id="{{ q.id }}_{{ choice }}_{{ forloop.counter }}"
+                                            name="{{ q.id }}_{{ count }}" value="[{{ choice }}]{{ degree }}"/>
+                                        <label for="{{ q.id }}_{{ choice }}_{{ forloop.counter }}">_</label>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                     </tr>
+                {% endwith %}
+            {% endfor %}
+            </tbody>
+        {% endwith %}
+         </table>
+    </div>
+{% endif %}

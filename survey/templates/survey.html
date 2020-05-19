@@ -1,0 +1,71 @@
+{% extends 'base_layout.html' %}
+{% load helper %}
+{% load static %}
+
+{% block title %}Survey{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/survey.css' %}">
+
+    <div class="container-fluid">
+        <form method="POST" id="survey-form" class="survey-form" action="{% url 'survey:submit' %}">
+            {% csrf_token %}
+            <div>
+                {% for section, questions in sections.items %}
+                    <h3>{{ section }}</h3>
+                    <fieldset>
+                        <h2>{{ section }}</h2>
+                        {% for q in questions %}
+                            <div class="question" id="{{ q.id }}">
+                                <div class="question-title"><p>{{ q.name }}</p></div>
+                                {% include 'type.html' %}
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+                {% endfor %}
+
+                <h3>Submission</h3>
+                <fieldset>
+                    <h2>Submission</h2>
+                    <div class="resources">
+                        <div class="resource">
+                            <a href="{% url 'survey:output_pdf' %}" target="_blank">
+                                <button id="output-submission-in-pdf" type="button" class="px-3 py-2 px-sm-4 mb-2">
+                                    <i class="fas fa-file-download fa-lg mr-2"></i>
+                                    Download Your Submission.pdf
+                                </button>
+                            </a>
+                            <p>This will download all of the survey questions and answers into a single file for future
+                                reference. This is optional, you can also review your survey and download it after submission.</p>
+                        </div>
+                        <h4 style="">Don't forget to submit the survey if you are finished.</h4>
+                    </div>
+                </fieldset>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal fade" id="submit_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="submit">Still want to submit?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" id="btnNo" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" id="btnYes" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/jquery/jquery.form.min.js' %}"></script>
+    <script src="{% static 'js/jquery/jquery.steps.min.js' %}"></script>
+    <script src="{% static 'js/survey.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'dashboard_layout.html' %}
+{% load helper %}
+
+{% block title %}Single Submission{% endblock %}
+
+{% block dashboard_content %}
+<div class="container">
+    <div class="my-3">
+        <h2 class="mb-0">{{ survey_username }}</h2>
+    </div>
+    <div class="my-3">
+    {% for section, question_answer_dict in sections.items %}
+        <h2>{{ section }}</h2>
+        {% for question, answer in question_answer_dict.items %}
+            <p>{{ question }}</p>
+            {% for ans in answer|split_answer %}
+                <p><mark>{{ ans|add_space_between_choice_answer }}</mark></p>
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+
+<script>
+    $( "#nav-dashboard-submission" ).addClass( "active" );
+</script>
+
+{% endblock %}

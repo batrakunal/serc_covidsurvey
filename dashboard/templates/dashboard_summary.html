@@ -1,0 +1,201 @@
+{% extends 'dashboard_layout.html' %}
+{% load helper %}
+{% load static %}
+
+{% block title %}Summary{% endblock %}
+
+{% block dashboard_content %}
+<div class="container my-3">
+    <h4># of all participants: {{ number_of_participant }}</h4>
+    <h4># of effective(answered over 70%) participants: {{ number_of_effective_participant }}</h4>
+    <h4># of completed participants: {{ number_of_completed_survey }}</h4>
+    <form method="get">
+        <div>
+            <div class="form-check form-check-inline">
+                <h4>sample:</h4>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-all" value="all" checked>
+              <label class="form-check-label" for="radio-sample-all">all</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-effective" value="effective">
+              <label class="form-check-label" for="radio-sample-effective">effective</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-completed" value="completed">
+              <label class="form-check-label" for="radio-sample-completed">completed</label>
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit" value="Submit">Apply</button>
+    </form>
+</div>
+<div class="container my-3">
+    <div class="row">
+        {% for question in question_list %}
+            <div class="col-sm-4 pb-4">
+                <div class="header">
+                    <p class="text-uppercase text-muted ls-1 mb-1">{{ question.section }}</p>
+                    <h6 class="my-3">{{ question.content }}</h6>
+                </div>
+                <div class="body">
+                    {% if question.type == "choice" or question.type == "choice-text" or question.type == "choice-multi-text" %}
+                        <div class="chart">
+                            <a href="#" class="download-as-image" download="{{ question.id }}.png">download chart as image</a>
+                            <canvas id="chart-{{ question.id }}" class="chart-canvas"></canvas>
+                        </div>
+                    {% endif %}
+{#                    {% if question.type == "text" or question.type == "choice-text" %}#}
+                        <div class="my-3">
+                            <a href="/dashboard/export/export-text/?qid={{ question.id }}">download answers as txt</a>
+                        </div>
+                        <div>
+                            <p>Answered: {{ question.count }}</p>
+                            <p>Not Answered:  {{ number_of_computed_participant|subtract:question.count }}</p>
+                            <button class="btn btn-info" data-toggle="modal" data-target="#modal-{{ question.id }}" href="#">View Detail</button>
+                        </div>
+                        <div class="modal fade" id="modal-{{ question.id }}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="support">{{ question.content }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul>
+                                        {% for answers in question.answers %}
+                                            <li><p>{{ answers }}</p></li>
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+{#                    {% endif %}#}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/chart.js/dist/Chart.min.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-datalabels/chartjs-plugin-datalabels-0.7.0.js' %}"></script>
+<script>
+// menu add active
+$( "#nav-dashboard-summary" ).addClass( "active" );
+// check radio
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+$("input[type=radio]").each(function() {
+      let currInputName = $(this).attr('name');
+      if(getParameterByName(currInputName) == $(this).val()){
+          $(this).prop("checked", true);
+      }
+});
+// download image
+$(".download-as-image").click( function() {
+    let image = $(this).next()[0].toDataURL("image/png").replace("image/png", "image/octet-stream");
+    $(this).attr('href', image);
+})
+// set bar for agree/disagree
+function create_Chart(chart, data, metadata, numberOfParticipants, showNotAnswer) {
+        let bgColor = [];
+        for(let counter in data) {
+            bgColor.push('#5572cc');
+        }
+        {#else bgColor = ['#00cc66', '#88ff88', '#ff8888', '#cc0000'];#}
+
+        metadata = metadata.replace('&lt;','<').replace('&gt;', '>')
+        let labels = metadata.split(";");
+
+        if (showNotAnswer) {
+            labels.push("Not Answered");
+            let numberOfDidnotAnswer = numberOfParticipants - data.reduce((a, b) => a + b, 0);
+            data.push(numberOfDidnotAnswer);
+        }
+
+        let datasetList = []
+        let i = 0
+        labels.forEach((label, idx, arr) => {
+            datasetList.push({
+                label: label,
+                data: [data[i]],
+                backgroundColor: bgColor[i],
+                borderWidth: 1,
+                hidden: (idx === arr.length - 1 && showNotAnswer) ? true : false
+            })
+            i++;
+        })
+        for (let label in labels) {
+
+        }
+
+        new Chart(chart, {
+        type: 'bar',
+        data: {
+            datasets: datasetList
+        },
+        options: {
+            aspectRatio: 1,
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        fontSize: 13,
+                        maxRotation: 90,
+                        minRotation: 80
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+            },
+            tooltips: {
+                titleFontSize: 0,
+            },
+            plugins: {
+              datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: Math.round,
+              }
+            },
+            layout: {
+                padding: {
+                    top: 25,
+                    bottom: 25,
+                }
+            }
+        }
+    });
+}
+
+{% for question in question_list %}
+    {% if question.type == "choice" or question.type == "choice-text" or question.type == "choice-multi-text"%}
+        {% if question.type == "choice-multi-text" %}
+        create_Chart($('#chart-{{ question.id }}'), {{ question.choice_counted }}, "{{ question.choice }}", {{ number_of_computed_participant }}, false);
+        {% else %}
+        create_Chart($('#chart-{{ question.id }}'), {{ question.choice_counted }}, "{{ question.choice }}", {{ number_of_computed_participant }}, true);
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+</script>
+
+{% endblock %}

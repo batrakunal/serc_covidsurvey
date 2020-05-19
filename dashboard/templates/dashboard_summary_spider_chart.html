@@ -1,0 +1,104 @@
+{% extends 'dashboard_layout.html' %}
+{% load helper %}
+{% load static %}
+
+{% block title %}Spider Chart{% endblock %}
+
+{% block dashboard_content %}
+<div class="container my-3">
+    <h4># of all participants: {{ number_of_participant }}</h4>
+    <h4># of effective(answered over 70%) participants: {{ number_of_effective_participant }}</h4>
+    <h4># of completed participants: {{ number_of_completed_survey }}</h4>
+    <form method="get">
+        <div>
+            <div class="form-check form-check-inline">
+                <h4>sample:</h4>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-all" value="all" checked>
+              <label class="form-check-label" for="radio-sample-all">all</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-effective" value="effective">
+              <label class="form-check-label" for="radio-sample-effective">effective</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-completed" value="completed">
+              <label class="form-check-label" for="radio-sample-completed">completed</label>
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit" value="Submit">Apply</button>
+    </form>
+</div>
+<div class="container my-3">
+    <div class="row">
+        <a href="#" class="download-as-image" download="spider-chart.png">download chart as image</a>
+        <canvas id="chart-spider-summary" class="chart-canvas"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/chart.js/dist/Chart.min.js' %}"></script>
+<script>
+// menu add active
+$( "#nav-dashboard-summary-spider-chart" ).addClass( "active" );
+// check radio
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+$("input[type=radio]").each(function() {
+      let currInputName = $(this).attr('name');
+      if(getParameterByName(currInputName) == $(this).val()){
+          $(this).prop("checked", true);
+      }
+});
+// download image
+$(".download-as-image").click( function() {
+    let image = $(this).next()[0].toDataURL("image/png").replace("image/png", "image/octet-stream");
+    $(this).attr('href', image);
+})
+// set bar for agree/disagree
+function create_Chart(chart, label_list, data_list) {
+    new Chart(chart, {
+        type: 'radar',
+        data: {
+          labels: label_list,
+          datasets: [{
+            label: "Agree Rate",
+            backgroundColor: "rgba(200,0,0,0.2)",
+            data: data_list
+          }]
+        },
+        options: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Agree Rate Spider Chart'
+            },
+            tooltips: {
+                enabled: true,
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        return data.datasets[tooltipItem.datasetIndex].label + ' : ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                    }
+                }
+            },
+        }
+    });
+}
+let label_list = []
+{% for label in label_list %}
+    label_list.push("{{label}}")
+{% endfor %}
+
+create_Chart($('#chart-spider-summary'), label_list, {{ data_list }});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome, {{ user.username }}</h1>
+    <p>Last login: {{ user.last_login }}</p>
+    <p>Last survey saved: {{ user.last_survey_save }}</p>
+
+    {% if user.is_survey_complete %}
+        <p><a class="m-2 btn btn-outline-primary" href = "/survey/confirmation">Completed survey</a></p>
+    {% elif not user.last_survey_save %}
+        <p><a class="m-2 btn btn-outline-primary" href = "/survey/covid">Start survey</a></p>
+    {% else %}
+        <p><a class="m-2 btn btn-outline-primary" href = "/survey/covid">Continue survey</a></p>
+    {% endif %}
+    <p><a class="m-2 btn btn-outline-primary" href="{% url 'password_change' %}">Change password</a></p>
+
+    {% if user.is_staff %}
+        <p><a class="m-2 btn btn-outline-primary" href = "/dashboard/export">Dashboard</a></p>
+    {% endif %}
+
+    {% if user.is_superuser %}
+        <p><a class="m-2 btn btn-outline-primary" href = "/admin">Admin Panel</a></p>
+    {% endif %}
+</div>
+{% endblock %}

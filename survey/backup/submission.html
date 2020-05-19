@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submission</title>
+</head>
+<body>
+<h2>{{ user }}</h2>
+
+{% for section, question_answer_dict in sections.items %}
+
+    <h2>{{ section }}</h2>
+    {% for question, answer in question_answer_dict.items %}
+        <p>{{ question }}</p>
+        <p>{{ answer }}</p>
+    {% endfor %}
+{% endfor %}
+
+</body>
+</html>

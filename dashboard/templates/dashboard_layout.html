@@ -1,0 +1,24 @@
+{% extends 'base_layout.html' %}
+
+{% block content %}
+
+<div class="container">
+    <ul class="nav nav-tabs">
+{#        <li class="nav-item">#}
+{#            <a class="nav-link" id="nav-dashboard-home" href="/dashboard">Dashboard</a>#}
+{#        </li>#}
+        <li class="nav-item">
+            <a class="nav-link" id="nav-dashboard-export" href="/dashboard/export">Export</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="nav-dashboard-summary" href="/dashboard/summary">Summary</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="nav-dashboard-submission" href="/dashboard/submission">Submission</a>
+        </li>
+    </ul>
+</div>
+
+{% block dashboard_content %}{% endblock %}
+
+{% endblock %}

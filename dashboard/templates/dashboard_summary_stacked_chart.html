@@ -1,0 +1,199 @@
+{% extends 'dashboard_layout.html' %}
+{% load helper %}
+{% load static %}
+
+{% block title %}Stacked Chart{% endblock %}
+
+{% block dashboard_content %}
+<div class="container my-3">
+    <h4># of participants: {{ number_of_participant }}</h4>
+    <h4># of effective(answered over 70%) participants: {{ number_of_effective_participant }}</h4>
+    <h4># of completed surveys: {{ number_of_completed_survey }}</h4>
+    <form method="get">
+        <div>
+            <div class="form-check form-check-inline">
+                <h4>sample:</h4>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-all" value="all" checked>
+              <label class="form-check-label" for="radio-sample-all">all</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-effective" value="effective">
+              <label class="form-check-label" for="radio-sample-effective">effective</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="sample" id="radio-sample-completed" value="completed">
+              <label class="form-check-label" for="radio-sample-completed">completed</label>
+            </div>
+        </div>
+        <div class="form-group w-50">
+            <div class="form-check form-check-inline">
+                <h4>question to analyze:</h4>
+            </div>
+            <select name="question-id" class="form-control" id="question-id-select">
+                <option selected>Choose...</option>
+                {% for question in question_list %}
+                    <option value="{{ question.id }}">{{ question.id }}: {{ question.content }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit" value="Submit">Apply</button>
+    </form>
+
+    {% for question in question_list %}
+            {% if question.org_type_stacked_count %}
+                <button type="button" id="stacked-bar-selector" class="btn btn-outline-secondary my-3">change to 100% stacked bar</button>
+        {% endif %}
+    {% endfor %}
+</div>
+<div class="container my-3">
+    {% for question in question_list %}
+        {% if question.org_type_stacked_count %}
+            <div class="header">
+                <p class="text-uppercase text-muted ls-1 mb-1">{{ question.section }}</p>
+                <h6 class="my-3">{{ question.content }}</h6>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 pb-4">
+                    <div class="chart">
+                        <a href="#" class="download-as-image" download="{{ question.id }}-stacked-type.png">download chart as image</a>
+                        <canvas id="chart-{{ question.id }}-type" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="col-sm-6 pb-4">
+                    <div class="chart">
+                        <a href="#" class="download-as-image" download="{{ question.id }}-stacked-size.png">download chart as image</a>
+                        <canvas id="chart-{{ question.id }}-size" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="col-sm-6 pb-4">
+                    <div class="chart">
+                        <a href="#" class="download-as-image" download="{{ question.id }}-stacked-length.png">download chart as image</a>
+                        <canvas id="chart-{{ question.id }}-length" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/chart.js/dist/Chart.min.js' %}"></script>
+<script src="{% static 'js/chartjs-plugin-stacked100/stacked100.js' %}"></script>
+<script>
+// menu add active
+$( "#nav-dashboard-summary-stacked-chart" ).addClass( "active" );
+// check radio
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+$("input[type=radio]").each(function() {
+      let currInputName = $(this).attr('name');
+      if(getParameterByName(currInputName) == $(this).val()){
+          $(this).prop("checked", true);
+      }
+});
+$("option").each(function() {
+      let currInputName = $(this).parent().attr('name');
+      if(getParameterByName(currInputName) == $(this).val()){
+          $(this).prop("selected", true);
+      }
+});
+// download image
+$(".download-as-image").click( function() {
+    let image = $(this).next()[0].toDataURL("image/png").replace("image/png", "image/octet-stream");
+    $(this).attr('href', image);
+})
+// set bar for agree/disagree
+function create_Chart(chart, stacked_count_list, label) {
+    label = label.replace('&lt;','<').replace('&gt;', '>')
+    let label_list = label.split(",")
+    new Chart(chart, {
+        type: 'bar',
+        data: {
+            labels: label_list,
+            datasets: [{
+                label: 'Strongly Agree',
+                backgroundColor: "#00cc66",
+                data: stacked_count_list[0],
+            }, {
+                label: 'Agree',
+                backgroundColor: "#88ff88",
+                data: stacked_count_list[1],
+            }, {
+                label: 'Disagree',
+                backgroundColor: "#ff8888",
+                data: stacked_count_list[2],
+            }, {
+                label: 'Strongly Disagree',
+                backgroundColor: "#cc0000",
+                data: stacked_count_list[3],
+            }],
+        },
+        options: {
+            plugins: {
+                stacked100: {
+                    enable: true,
+                    replaceTooltipLabel: true
+                }
+            },
+            aspectRatio: 1.4,
+            responsive: true,
+            maintainAspectRatio: true,
+            tooltips: {
+              displayColors: true,
+              callbacks:{
+                mode: 'x',
+              },
+            },
+            scales: {
+              xAxes: [{
+                stacked: true,
+                gridLines: {
+                  display: false,
+                }
+              }],
+              yAxes: [{
+                stacked: true,
+                ticks: {
+                  beginAtZero: true,
+                },
+                type: 'linear',
+              }]
+            },
+            legend: {
+                position: 'bottom',
+            }
+        }
+    });
+}
+
+{% for question in question_list %}
+    {% if question.org_type_stacked_count %}
+    create_Chart($('#chart-{{ question.id }}-type'), {{ question.org_type_stacked_count }}, "{{ question.org_type_stacked_label }}");
+    create_Chart($('#chart-{{ question.id }}-size'), {{ question.org_size_stacked_count }}, "{{ question.org_size_stacked_label }}");
+    create_Chart($('#chart-{{ question.id }}-length'), {{ question.applied_length_stacked_count }}, "{{ question.applied_length_stacked_label }}");
+    {% endif %}
+{% endfor %}
+
+$('#stacked-bar-selector').click(function() {
+    let currentStatus = true;
+    Chart.helpers.each(Chart.instances, function(instance){
+        currentStatus = instance.options.plugins.stacked100.enable
+        instance.options.plugins.stacked100.enable = !currentStatus;
+        instance.update();
+    })
+    if(currentStatus) $(this).text("change to normal stacked bar");
+    else $(this).text("change to 100% stacked bar");
+})
+
+</script>
+
+{% endblock %}

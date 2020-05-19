@@ -1,0 +1,55 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+<div class="survey pb-5 pt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 col-sm-12">
+                <h1>SERC COVID-19 IMPACT SURVEY</h1>
+{#                <h1 class="mb-4">Maturity Benchmark Survey</h1>#}
+                <h5 class="mb-5">In particular, we are interested in learning about your thoughts on the current impact on the field of systems engineering and you as a professional. Overall results will provide critical insights into the impact of COVID-19 on the broader systems engineering community.</h5>
+{#                <h5 style="color: #8c2131">Survey was closed on Feb 1. Thank you for completing our survey! </h5>#}
+                {% if user.is_survey_complete %}
+                    <a href="survey/confirmation/"><button class="btn btn-primary">Review Survey</button></a>
+                {% elif user.last_survey_save %}
+                    <a href="survey/covid/"><button class="btn btn-primary">Continue Survey</button></a>
+                {% else %}
+                    <a href="survey/covid/"><button class="btn btn-primary">Start Survey</button></a>
+                {% endif %}
+            </div>
+            <div class="col-5 d-none d-lg-flex align-items-center justify-content-center">
+                 <img class="w-50" src="{% static 'images/survey.png' %}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+            <div class="col d-flex align-items-center justify-content-center"><img style="width:150px" src="{% static 'images/logo1.png' %}"></div>
+            <div class="col d-flex align-items-center justify-content-center"><img style="width:150px" src="{% static 'images/logo3.png' %}"></div>
+    </div>
+</div>
+
+<div id="about" class="container pb-5">
+    <p class="title">WHO IS RUNNING THE SURVEY?</p>
+    <p>The Systems Engineering Research Center (SERC) and INCOSE invite you to complete a survey about the impact of COVID-19 at various levels. In particular, we are interested in learning about your thoughts on the current impact on the field of systems engineering and you as a professional.</p>
+    <p class="title">WHY SHOULD I PARTICIPATE?</p>
+    <p>Overall results will provide critical insights into the impact of COVID-19 on the broader systems engineering community.</p>
+    <p class="title">HOW LONG IS THE SURVEY? </p>
+    <p>The survey should take about 10 minutes to complete.</p>
+    <p>Respondents can complete a portion of a survey and return later to finish the rest. The incomplete survey will be shown on their dashboard.</p>
+    <p class="title">HOW WILL MY DATA BE USED?</p>
+    <p>Data from the survey will be stored by the SERC. The final anonymized dataset (no individually or organizationally identifying information) will be stored by the SERC. The SERC will analyze the data and this aggregated analysis will be provided to INCOSE. In addition, a report on the results of the survey will be published by the professional organizations.</p>
+    <p class="title">HOW WILL MY DATA BE PROTECTED? </p>
+    <p>Protecting your data is important to SERC. We do not share your data with third parties. We follow generally accepted standards to protect the data submitted to us, both during transmission and once it is received. Most common attacks such as XSS, SQL injection, and CSRF will be detected and handled. Your data will be stored in a private database that can only be accessed by authorized SERC researchers.</p>
+    <p class="title">QUESTIONS?</p>
+    <p>If you have additional questions, please contact kpepe@stevens.edu</p>
+</div>
+
+{% endblock %}
