@@ -2,7 +2,6 @@ import io
 import re
 from time import gmtime, strftime
 
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -10,14 +9,39 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 
-from accounts.models import CustomUser
+from accounts.models import SurveyUser
 from .models import Answer, get_answers_by_user, get_all_question_in_survey, get_survey_by_slug
 
 
-@login_required
+def isValidEmail(email):
+    regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    if re.search(regex, email):
+        return True
+    else:
+        return False
+
+
+def retrieve(request):
+    email = request.GET.get('email', '')
+    return render(request, 'retrieve.html', {'email': email})
+
+
 def view_survey(request, slug):
-    if request.user.is_survey_complete:
-        return redirect('profile')
+    if request.method != "POST":
+        return redirect('home')
+
+    if not isValidEmail(request.POST.get('email', '')):
+        return HttpResponse('Invalid Email address', status=400)
+
+    email = request.POST['email']
+    try:
+        user = SurveyUser.objects.get(email=email)
+    except SurveyUser.DoesNotExist:
+        user = SurveyUser.objects.create(email=email)
+
+    if user.is_survey_complete:
+        return redirect('/survey/retrieve?email='+email)
+
     # get current survey by slug
     survey_list = get_survey_by_slug(slug)
     if len(survey_list) == 0:
@@ -25,16 +49,39 @@ def view_survey(request, slug):
     survey_obj = survey_list[0]
     # construct data for view
     data = {'sections': get_section_dict(survey_obj),
-            'answers': get_answer_dict_in_user(request.user.id)}
+            'answers': get_answer_dict_in_user(user.id),
+            'uid': user.id,
+            'token': user.token}
 
     return render(request, 'survey.html', data)
 
 
-@login_required
 def view_survey_confirmation(request):
-    if not request.user.is_survey_complete:
-        return redirect('profile')
-    answers = get_answers_by_user(request.user.id)
+    if request.method != "POST":
+        return redirect('home')
+
+    email = request.POST.get('email', None)
+    uid = request.POST.get('uid', None)
+    token = request.POST.get('token', None)
+
+    if email is not None:
+        try:
+            user = SurveyUser.objects.get(email=email, token=token)
+        except SurveyUser.DoesNotExist:
+            return render(request, 'retrieve.html', {'email': email, 'error': 'Authentication failed'})
+    else:
+        try:
+            user = SurveyUser.objects.get(id=uid, token=token)
+        except SurveyUser.DoesNotExist:
+            return HttpResponse('Invalid Auth', status=400)
+
+    # for submit
+    if not user.is_survey_complete:
+        user.is_survey_complete = True
+        user.last_survey_save = timezone.now()
+        user.save()
+
+    answers = get_answers_by_user(user.id)
     questions = get_all_question_in_survey("covid")
     answers_dict = get_questionId_answer_dict(answers)
     # add data into pdf content
@@ -44,11 +91,18 @@ def view_survey_confirmation(request):
             data[question.section.name] = {}
         data[question.section.name][question.content] = answers_dict.get(question.id, "Didn't answer")
 
-    return render(request, 'confirmation.html', {'data': data})
+    return render(request, 'confirmation.html', {'data': data, 'user': user})
 
 
-@login_required
 def output_submission_pdf(request):
+    uid = request.GET.get('uid', None)
+    token = request.GET.get('token', None)
+
+    try:
+        user = SurveyUser.objects.get(id=uid, token=token)
+    except SurveyUser.DoesNotExist:
+        return HttpResponse('Invalid Auth', status=400)
+
     buffer = io.BytesIO()
     # pdf init
     doc = SimpleDocTemplate(buffer, bottomMargin=45, topMargin=55, rightMargin=50, leftMargin=50,
@@ -66,9 +120,10 @@ def output_submission_pdf(request):
     # pdf content
     elements = [Paragraph('SERC COVID-19 Impact Survey', styles['ColorTitle']),
                 Paragraph('Output Time: ' + strftime("%Y-%m-%d %H:%M:%S", gmtime()), styles['Info']),
-                Paragraph('Account: ' + request.user.username, styles['Info'])]
+                Paragraph('Email: ' + user.email, styles['Info']),
+                Paragraph('Submission ID: ' + user.token, styles['Info'])]
     # prepare data
-    answers = get_answers_by_user(request.user.id)
+    answers = get_answers_by_user(user.id)
     questions = get_all_question_in_survey("covid")
     answers_dict = get_questionId_answer_dict(answers)
     # add data into pdf content
@@ -91,33 +146,32 @@ def output_submission_pdf(request):
 
 
 # save
-@login_required
 def save_survey(request):
-    if request.method == "POST":
-        answer_list = []
-        for key in request.POST:
-            if key == 'csrfmiddlewaretoken':
-                continue
-            answer_list.append(Answer(question_id=key, content=request.POST[key], user_id=request.user.id))
-
-        Answer.objects.filter(user_id=request.user.id).delete()
-        Answer.objects.bulk_create(answer_list)
-        CustomUser.objects.filter(id=request.user.id).update(last_survey_save=timezone.now())
-
-        return JsonResponse({})
-    else:
+    if request.method != "POST":
         return HttpResponse('Invalid HTTP method', status=400)
 
+    uid = request.POST.get('uid', None)
+    token = request.POST.get('token', None)
 
-# submit
-@login_required
-def submit_survey(request):
-    if request.method == "POST":
-        CustomUser.objects.filter(id=request.user.id).update(is_survey_complete=True, last_survey_save=timezone.now())
+    try:
+        user = SurveyUser.objects.get(id=uid, token=token)
+    except SurveyUser.DoesNotExist:
+        return HttpResponse('Invalid Auth', status=400)
 
-        return redirect('/survey/confirmation')
-    else:
-        return redirect('home')
+    if user.is_survey_complete:
+        return HttpResponse('Invalid Request', status=400)
+
+    answer_list = []
+    for key in request.POST:
+        if key == 'csrfmiddlewaretoken' or key == 'token' or key == 'uid':
+            continue
+        answer_list.append(Answer(question_id=key, content=request.POST[key], user_id=user.id))
+
+    Answer.objects.filter(user_id=user.id).delete()
+    Answer.objects.bulk_create(answer_list)
+    SurveyUser.objects.filter(id=user.id).update(last_survey_save=timezone.now())
+
+    return JsonResponse({})
 
 
 # Helper: for survey

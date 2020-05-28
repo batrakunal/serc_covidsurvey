@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import CustomUser
+from accounts.models import SurveyUser
 
 
 class Survey(models.Model):
@@ -65,7 +65,7 @@ class Choice(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, null=True, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(SurveyUser, null=True, on_delete=models.SET_NULL)
     content = models.TextField()
 
     class Meta:

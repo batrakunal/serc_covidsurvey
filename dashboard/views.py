@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from survey.models import Survey, Answer, get_all_question_in_survey
 
 from django.http import HttpResponse
-from accounts.models import CustomUser
+from accounts.models import SurveyUser
 
 
 @login_required
@@ -30,7 +30,7 @@ def construct_dashboard_summary(request):
     # get answers
     all_answers = get_all_answers()
     all_answers_users = get_all_answers_users()
-    completed_answers_users = CustomUser.objects.filter(is_survey_complete=1)
+    completed_answers_users = SurveyUser.objects.filter(is_survey_complete=1)
     effective_answers_users = get_effective_answers_users(all_answers_users)
 
     # sample filter
@@ -78,17 +78,17 @@ def construct_dashboard_summary(request):
 def construct_dashboard_submission(request):
     if not request.user.is_staff:
         return redirect('profile')
-    all_user = CustomUser.objects.all()
+    all_user = SurveyUser.objects.all()
     data = {"all_user": all_user}
 
     return render(request, 'dashboard_submission.html', data)
 
 
 @login_required
-def construct_dashboard_submission_single(request, username):
+def construct_dashboard_submission_single(request, email):
     if not request.user.is_staff:
         return redirect('profile')
-    users = CustomUser.objects.filter(username=username)
+    users = SurveyUser.objects.filter(email=email)
     if len(users) == 0:
         return redirect('dashboard:submission')
 
@@ -106,7 +106,7 @@ def construct_dashboard_submission_single(request, username):
 
     # construct data for view
     data = {'sections': sections,
-            'survey_username': username}
+            'survey_username': email}
 
     return render(request, 'dashboard_submission_single.html', data)
 
@@ -245,7 +245,6 @@ def count_multi_choice_answer(choice, answer_list):
         for answer in answer_list:
             countList.append(sum(map(lambda ans: ans.startswith(choice), answer.split(';;;'))))
 
-    print(countList)
     return countList
 
 
@@ -297,9 +296,9 @@ def export_to_xls(request):
     rows = [quesion_id_list_row, quesion_content_list, quesion_type_list]
 
     # tmp_dict = {"Strongly Agree": 4, "Agree": 3, "Disagree": 2, "Strongly Disagree": 1}
-    users = CustomUser.objects.exclude(last_survey_save__isnull=True).values()
+    users = SurveyUser.objects.exclude(last_survey_save__isnull=True).values()
     for user in list(users):
-        row = [user.get("username")]
+        row = [user.get("email")]
         answers = Answer.objects.filter(user_id=user.get("id")).values()
         answers = list(answers)
         for question_id in quesion_id_list:

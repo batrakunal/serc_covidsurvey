@@ -138,6 +138,9 @@ function save(form) {
     let data = {}
     // auth
     composeData(data, 'csrfmiddlewaretoken', $("input[name='csrfmiddlewaretoken']").val())
+    composeData(data, 'uid', $("input[name='uid']").val())
+    composeData(data, 'token', $("input[name='token']").val())
+
     // choice, choice-text, choice-multi-text, degree
     $("#survey-form input:checked").each(function() {
         composeData(data, $(this).attr('name'), $(this).val())

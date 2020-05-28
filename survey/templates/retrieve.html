@@ -1,0 +1,32 @@
+{% extends 'base_layout.html' %}
+{% load helper %}
+{% load static %}
+
+{% block title %}Retrieve Submission{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-12 mb-4">
+                <h2>Retrieve Submission</h2>
+                <form method="POST" id="survey-form" class="survey-form" action="{% url 'survey:confirmation' %}">
+                    <div class="form-group">
+                        {% csrf_token %}
+                        <label for="email" class="col-form-label">Email:</label>
+                        <input type="email" name="email" class="form-control" id="email" value="{{ email }}">
+                        <label for="token" class="col-form-label">Submission ID:</label>
+                        <input type="token" name="token" class="form-control" id="token">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Retrieve</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        {% if error %}error("{{ error }}"){% endif %}
+    </script>
+{% endblock %}

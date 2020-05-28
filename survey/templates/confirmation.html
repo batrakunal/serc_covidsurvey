@@ -8,20 +8,23 @@
 <div class="container">
     <div class="confirmation-header my-5">
         <h1>Thank you very much for taking the survey!</h1>
+        <h4><mark>Please remember the submission ID! You can use it to retrieve this submission in the future.</mark></h4>
+        <h4>Email: <mark>{{ user.email }}</mark></h4>
+        <h4>Submission ID: <mark>{{ user.token }}</mark></h4>
     </div>
 
-                    <div class="resources">
-                        <div class="resource">
-                            <a href="{% url 'survey:output_pdf' %}" target="_blank">
-                                <button id="output-submission-in-pdf" type="button" class="px-3 py-2 px-sm-4 mb-2">
-                                    <i class="fas fa-file-download fa-lg mr-2"></i>
-                                    Download Your Submission.pdf
-                                </button>
-                            </a>
-                            <p>This will download all of the survey questions and your answers into a single file for
-                                future reference.</p>
-                        </div>
-                    </div>
+    <div class="resources">
+        <div class="resource">
+            <a href="/survey/output-submission-pdf?token={{ user.token }}&uid={{ user.id }}" target="_blank">
+                <button id="output-submission-in-pdf" type="button" class="px-3 py-2 px-sm-4 mb-2">
+                    <i class="fas fa-file-download fa-lg mr-2"></i>
+                    Download Your Submission.pdf
+                </button>
+            </a>
+            <p>This will download all of the survey questions and your answers into a single file for
+                future reference.</p>
+        </div>
+    </div>
 
     {% for section, question_answer_dict in data.items %}
         <h2>{{ section }}</h2>

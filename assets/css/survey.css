@@ -300,6 +300,11 @@ tbody td{
 }
 
 /* responsive */
+@media screen and (max-width: 870px) {
+  table thead th {
+    font-size: 12px;}
+}
+
 @media screen and (max-width: 1100px) {
   label {
     min-width: 110px;
@@ -343,6 +348,7 @@ tbody td{
     width: auto;
   }
 }
+
 @media screen and (max-width: 768px) {
   #steps-uid-0-p-0 .form-row, #steps-uid-0-p-0 .form-group, #steps-uid-0-p-0 .form-date {
     width: 100%; }

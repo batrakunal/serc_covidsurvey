@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'surveyProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        # 'NAME': 'wrt1001',
+        # 'NAME': 'covid_survey',
         # 'USER': 'wrt1001_admin',
         # 'PASSWORD': 'Sercxyz1!',
         # 'HOST': 'database-1.cluster-cyzysefczdo3.us-east-2.rds.amazonaws.com',
