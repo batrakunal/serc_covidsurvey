@@ -1,5 +1,7 @@
 import io
 import re
+import urllib
+import json
 from time import gmtime, strftime
 
 from django.http import JsonResponse, HttpResponse, FileResponse
@@ -28,6 +30,19 @@ def retrieve(request):
 
 def view_survey(request, slug):
     if request.method != "POST":
+        return redirect('home')
+
+    recaptcha_response = request.POST.get('g-recaptcha-response')
+    url = 'https://www.google.com/recaptcha/api/siteverify'
+    values = {
+        'secret': "6Lfrfv0UAAAAAG73XupAvVf_AeIv_7Y4OoIntoci",
+        'response': recaptcha_response
+    }
+    data = urllib.parse.urlencode(values).encode()
+    req = urllib.request.Request(url, data=data)
+    response = urllib.request.urlopen(req)
+    result = json.loads(response.read().decode())
+    if not result['success']:
         return redirect('home')
 
     if not isValidEmail(request.POST.get('email', '')):

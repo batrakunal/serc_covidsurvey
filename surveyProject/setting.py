@@ -79,14 +79,14 @@ WSGI_APPLICATION = 'surveyProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        # 'NAME': 'covid_survey',
-        # 'USER': 'wrt1001_admin',
-        # 'PASSWORD': 'Sercxyz1!',
-        # 'HOST': 'database-1.cluster-cyzysefczdo3.us-east-2.rds.amazonaws.com',
-        'NAME': 'covid',
-        'USER': 'root',
-        'PASSWORD': 'yourpassword',
-        'HOST': '127.0.0.1',
+        'NAME': 'covid_survey',
+        'USER': 'wrt1001_admin',
+        'PASSWORD': 'Sercxyz1!',
+        'HOST': 'database-1.cluster-cyzysefczdo3.us-east-2.rds.amazonaws.com',
+        # 'NAME': 'covid',
+        # 'USER': 'root',
+        # 'PASSWORD': 'yourpassword',
+        # 'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
                     'init_command': "SET sql_mode='STRICT_TRANS_TABLES', innodb_strict_mode=1",
@@ -143,3 +143,7 @@ EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = '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'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Session expired in 2 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 120 * 60

@@ -55,13 +55,14 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="/survey/covid/" method="post">
+            <form action="/survey/covid/" id="startSurvey" method="post">
                 <div class="modal-body">
 
                 <div class="form-group">
                     {% csrf_token %}
                     <label for="email" class="col-form-label">Email:</label>
                     <input type="email" name="email" class="form-control" id="email">
+                    <div class="g-recaptcha my-3" data-sitekey="6Lfrfv0UAAAAAJHh3OvU05d5QeznURWAZ49J1jLU"></div>
                 </div>
 
                 </div>
@@ -73,4 +74,24 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block script %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+    $("#startSurvey").submit(function(event) {
+        let recaptcha = $("#g-recaptcha-response").val();
+        if (recaptcha === "") {
+            event.preventDefault();
+            error("Please check the recaptcha");
+            return
+        }
+        let response = grecaptcha.getResponse();
+        if (response.length === 0) {
+            event.preventDefault();
+            error("not validated");
+            return
+        }
+    });
+    </script>
 {% endblock %}

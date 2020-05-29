@@ -240,10 +240,13 @@ def count_choice_answer(choice, answer_list):
 
 def count_multi_choice_answer(choice, answer_list):
     choiceList = choice.split(";")
+
+    answer_list = list(map(lambda answer: answer.split(';;;'), answer_list))
+    answer_list = [item for sublist in answer_list for item in sublist]
+
     countList = []
     for choice in choiceList:
-        for answer in answer_list:
-            countList.append(sum(map(lambda ans: ans.startswith(choice), answer.split(';;;'))))
+        countList.append(sum(map(lambda ans: ans.startswith(choice), answer_list)))
 
     return countList
 
