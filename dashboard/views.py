@@ -85,10 +85,10 @@ def construct_dashboard_submission(request):
 
 
 @login_required
-def construct_dashboard_submission_single(request, email):
+def construct_dashboard_submission_single(request, id):
     if not request.user.is_staff:
         return redirect('profile')
-    users = SurveyUser.objects.filter(email=email)
+    users = SurveyUser.objects.filter(id=id)
     if len(users) == 0:
         return redirect('dashboard:submission')
 
@@ -101,12 +101,12 @@ def construct_dashboard_submission_single(request, email):
         question = answer.question
         if question.section not in sections:
             dict.clear()
-        dict[question.content] = answer.content
+        dict[str(question.id) + ' ' + question.content] = answer.content
         sections[question.section] = dict.copy()
 
     # construct data for view
     data = {'sections': sections,
-            'survey_username': email}
+            'survey_username': id}
 
     return render(request, 'dashboard_submission_single.html', data)
 
@@ -301,7 +301,7 @@ def export_to_xls(request):
     # tmp_dict = {"Strongly Agree": 4, "Agree": 3, "Disagree": 2, "Strongly Disagree": 1}
     users = SurveyUser.objects.exclude(last_survey_save__isnull=True).values()
     for user in list(users):
-        row = [user.get("email")]
+        row = [user.get("id")]
         answers = Answer.objects.filter(user_id=user.get("id")).values()
         answers = list(answers)
         for question_id in quesion_id_list:
@@ -340,6 +340,7 @@ def export_text(request):
             # if quest.type == "text" or quest.type == "choice" or quest.type == "choice-text":
             content += "\n====================\n"
             content += "Question " + str(quest.id) + ": " + str(quest.content) + "\n"
+            content += "Type: " + str(quest.type) + "\n"
             content += "Number of answers: " + str(len(answer_list)) + "\n--------------------\n"
             answer_string = "\n--------------------\n".join(answer_list)
             content += answer_string

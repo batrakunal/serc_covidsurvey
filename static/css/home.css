@@ -1,0 +1,24 @@
+.top {
+    background: linear-gradient(180deg, #fff 0%, #F0F7FC 100%);
+}
+
+.survey {
+    background: linear-gradient(180deg, #fff 0%, #F0F7FC 100%);
+    border-bottom: 1px solid #E1E6EF;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #0e264e;
+}
+
+header a:hover {
+    border-bottom: 1px;
+}
+
+#about .title {
+    color: #8c2131;
+}
+
+#about p {
+    font-size: 1.25rem;
+}

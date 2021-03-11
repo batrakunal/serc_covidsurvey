@@ -22,9 +22,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'je(ijl+2%@h)!7z0@dx=0&l-y*1kcbx15jb&ifbnua!n%-=n8h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['mbsematuritysurvey.sercuarc.org', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['covid-survey.sercuarc.org', 'localhost', '127.0.0.1']
 
 # Application definition
 

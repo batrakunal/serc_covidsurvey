@@ -16,7 +16,7 @@ from .models import Answer, get_answers_by_user, get_all_question_in_survey, get
 
 
 def isValidEmail(email):
-    regex = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     if re.search(regex, email):
         return True
     else:
@@ -101,10 +101,12 @@ def view_survey_confirmation(request):
     answers_dict = get_questionId_answer_dict(answers)
     # add data into pdf content
     data = {}
+    count = 1
     for question in questions:
         if question.section.name not in data:
             data[question.section.name] = {}
-        data[question.section.name][question.content] = answers_dict.get(question.id, "Didn't answer")
+        data[question.section.name][str(count) + ' ' + question.content] = answers_dict.get(question.id, "Didn't answer")
+        count += 1
 
     return render(request, 'confirmation.html', {'data': data, 'user': user})
 
